@@ -1,0 +1,53 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{81DB45D9-BF88-48A6-8F51-FDE4F2E31B48}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InventoryService", "src\InventoryService\InventoryService.csproj", "{81B75916-9F53-4D91-B2D4-D3A49FE060B7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationService", "src\NotificationService\NotificationService.csproj", "{20AA2998-6763-4BA0-8961-12B07CA84D1F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderService", "src\OrderService\OrderService.csproj", "{8BBCBB38-F2DE-4BCB-9E32-BC7E8DFC4FDA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "src\Shared\Shared.csproj", "{CD658733-0CD5-44D5-A491-59FD7AE2314F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B680F63F-2E3E-444A-BFB4-0AA60DA8B152}"
+	ProjectSection(SolutionItems) = preProject
+		compose.yaml = compose.yaml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{81B75916-9F53-4D91-B2D4-D3A49FE060B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81B75916-9F53-4D91-B2D4-D3A49FE060B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81B75916-9F53-4D91-B2D4-D3A49FE060B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81B75916-9F53-4D91-B2D4-D3A49FE060B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20AA2998-6763-4BA0-8961-12B07CA84D1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20AA2998-6763-4BA0-8961-12B07CA84D1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20AA2998-6763-4BA0-8961-12B07CA84D1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20AA2998-6763-4BA0-8961-12B07CA84D1F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BBCBB38-F2DE-4BCB-9E32-BC7E8DFC4FDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BBCBB38-F2DE-4BCB-9E32-BC7E8DFC4FDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BBCBB38-F2DE-4BCB-9E32-BC7E8DFC4FDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BBCBB38-F2DE-4BCB-9E32-BC7E8DFC4FDA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD658733-0CD5-44D5-A491-59FD7AE2314F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD658733-0CD5-44D5-A491-59FD7AE2314F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD658733-0CD5-44D5-A491-59FD7AE2314F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD658733-0CD5-44D5-A491-59FD7AE2314F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{81B75916-9F53-4D91-B2D4-D3A49FE060B7} = {81DB45D9-BF88-48A6-8F51-FDE4F2E31B48}
+		{20AA2998-6763-4BA0-8961-12B07CA84D1F} = {81DB45D9-BF88-48A6-8F51-FDE4F2E31B48}
+		{8BBCBB38-F2DE-4BCB-9E32-BC7E8DFC4FDA} = {81DB45D9-BF88-48A6-8F51-FDE4F2E31B48}
+		{CD658733-0CD5-44D5-A491-59FD7AE2314F} = {81DB45D9-BF88-48A6-8F51-FDE4F2E31B48}
+	EndGlobalSection
+EndGlobal

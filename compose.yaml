@@ -1,0 +1,66 @@
+﻿version: '3.8'
+services:
+  kafka:
+    image: confluentinc/confluent-local:7.4.1
+    hostname: kafka
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "9101:9101"
+    environment:
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:29093"
+      KAFKA_LISTENERS: "PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092"
+    
+  order-db:
+    image: postgres:16-alpine
+    container_name: order-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: orderdb
+    ports: [ "5433:5432" ]
+
+  inventory-db:
+    image: postgres:16-alpine
+    container_name: inventory-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: inventorydb
+    ports: [ "5434:5432" ]
+
+  notification-db:
+    image: postgres:16-alpine
+    container_name: notification-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: notificationdb
+    ports: [ "5435:5432" ]
+
+  order-service:
+    build: ./src/OrderService
+    container_name: order-service
+    ports: ["8080:8080"]
+    depends_on: [kafka, order-db]
+    environment:
+      - ConnectionStrings__Default=Host=order-db;Database=orderdb;Username=postgres;Password=postgres
+      - Kafka__BootstrapServers=kafka:9092
+
+  notification-service:
+    build: ./src/NotificationService
+    container_name: notification-service
+    depends_on: [kafka, notification-db]
+    environment:
+      - ConnectionStrings__Default=Host=notification-db;Database=notificationdb;Username=postgres;Password=postgres
+      - Kafka__BootstrapServers=kafka:9092
+
+  inventory-service:
+    build: ./src/InventoryService
+    container_name: inventory-service
+    depends_on: [ kafka, inventory-db ]
+    environment:
+      - ConnectionStrings__Default=Host=inventory-db;Database=inventorydb;Username=postgres;Password=postgres
+      - Kafka__BootstrapServers=kafka:9092
