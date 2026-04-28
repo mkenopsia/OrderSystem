@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using NotificationService.Infrastructure.Email;
 using NotificationService.Infrastructure.Kafka;
 using NotificationService.Infrastructure.Persistence;
 using NotificationService.Repositories;
@@ -12,6 +13,9 @@ builder.Services.AddDbContext<NotificationDbContext>(opts =>
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<INotificationService, NotificationService.Services.NotificationService>();
 builder.Services.AddHostedService<NotificationConsumerWorker>();
+
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddScoped<IEmailSender, MailKitEmailSender>();
 
 var host = builder.Build();
 
