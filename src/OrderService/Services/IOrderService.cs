@@ -4,5 +4,9 @@ namespace OrderService.Services;
 
 public interface IOrderService
 {
-    Task<OrderResponse> CreateAsync(CreateOrderRequest request, CancellationToken ct = default);
+    Task<OrderResponse> CreateAsync(
+        CreateOrderRequest request,
+        Guid userId,
+        string userEmail,
+        CancellationToken ct = default);
 }

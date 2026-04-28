@@ -7,7 +7,11 @@ namespace OrderService.Services;
 
 public class OrderService(IOrderRepository repository) : IOrderService
 {
-    public async Task<OrderResponse> CreateAsync(CreateOrderRequest request, CancellationToken ct = default)
+    public async Task<OrderResponse> CreateAsync(
+        CreateOrderRequest request, 
+        Guid userId, 
+        string userEmail, 
+        CancellationToken ct = default)
     {
         var order = new Order
         {
@@ -16,7 +20,14 @@ public class OrderService(IOrderRepository repository) : IOrderService
             Quantity = request.Quantity
         };
 
-        var orderCreatedEvent = new OrderCreatedEvent(order.Id, order.ProductId, order.Quantity, order.CreatedAtUtc);
+        var orderCreatedEvent = new OrderCreatedEvent(
+            OrderId: order.Id,
+            ProductId: order.ProductId,
+            Quantity: order.Quantity,
+            UserId: userId,
+            UserEmail: userEmail,
+            CreatedAtUtc: order.CreatedAtUtc
+        );
 
         var outbox = new OutboxMessage
         {

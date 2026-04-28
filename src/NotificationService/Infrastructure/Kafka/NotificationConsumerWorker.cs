@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Confluent.Kafka;
 using NotificationService.Services;
 using Shared.Events;
@@ -22,8 +23,8 @@ public class NotificationConsumerWorker(
             EnableAutoCommit = false,
             EnablePartitionEof = true
         };
-
-        using var consumer = new ConsumerBuilder<Ignore, string>(consumerConfig)
+        
+        using var consumer = new ConsumerBuilder<string, string>(consumerConfig)
             .SetErrorHandler((_, e) => logger.LogError("Kafka Error: {Reason}", e.Reason))
             .Build();
 
@@ -36,13 +37,15 @@ public class NotificationConsumerWorker(
             {
                 try
                 {
-                    var result = consumer.Consume(TimeSpan.FromSeconds(1));
+                    var result = consumer.Consume(TimeSpan.FromSeconds(2));
+                    if (result == null || result.IsPartitionEOF) continue;
+                    
+                    using var scope = scopeFactory.CreateScope();
+                    var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
-                    if (result == null) continue;
-                    if (result.IsPartitionEOF) continue;
-                    
-                    logger.LogInformation("Received message: {Value}", result.Message.Value); //todo
-                    
+                    await ProcessMessageAsync(result.Message, notificationService, stoppingToken);
+
+                    consumer.Commit(result);
                 }
                 catch (ConsumeException ex) when (ex.Error.Code == ErrorCode.UnknownTopicOrPart)
                 {
@@ -59,7 +62,7 @@ public class NotificationConsumerWorker(
         finally
         {
             consumer.Close();
-            logger.LogInformation("Consumer closed.");
+            logger.LogInformation("Consumer closed");
         }
     }
 
@@ -68,10 +71,25 @@ public class NotificationConsumerWorker(
         INotificationService service, 
         CancellationToken ct)
     {
-        var eventType = message.Value.Contains("ReservedAtUtc") 
-            ? nameof(InventoryReservedEvent) 
-            : nameof(InventoryFailedEvent);
-
-        await service.SendAsync(eventType, message.Value, ct);
+        try
+        {
+            var eventType = message.Value.Contains("ReservedAtUtc") 
+                ? nameof(InventoryReservedEvent) 
+                : nameof(InventoryFailedEvent);
+            
+            logger.LogInformation("📩 Processing {EventType} for Order {OrderId}", 
+                eventType, message.Key);
+            
+            await service.SendAsync(eventType, message.Value, ct);
+        }
+        catch (JsonException ex)
+        {
+            logger.LogError(ex, "Failed to deserialize message: {Value}", message.Value);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error processing message {Key}", message.Key);
+            throw;
+        }
     }
 }
