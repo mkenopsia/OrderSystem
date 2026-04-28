@@ -1,10 +1,9 @@
-using Microsoft.EntityFrameworkCore;
 using AuthService.Infrastructure.Persistence;
-using AuthService.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AuthDbContext>(o => o.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
-builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<AuthService.Services.AuthService>();
 builder.Services.AddControllers();
 
 var app = builder.Build();

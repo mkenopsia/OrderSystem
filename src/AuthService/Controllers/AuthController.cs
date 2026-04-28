@@ -28,7 +28,7 @@ public class AuthController(Services.AuthService authService) : ControllerBase
     public IActionResult VerifyToken()
     {
         var authHeader = Request.Headers["Authorization"].FirstOrDefault();
-        if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+        if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             return Unauthorized();
 
         var token = authHeader["Bearer ".Length..].Trim();
@@ -36,15 +36,29 @@ public class AuthController(Services.AuthService authService) : ControllerBase
         try
         {
             var principal = authService.ValidateToken(token);
-            if (principal == null) return Unauthorized();
+            if (principal == null || !principal.Identity?.IsAuthenticated == true) 
+                return Unauthorized();
+            
+            var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userEmail = principal.FindFirst(ClaimTypes.Email)?.Value;
+            
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("Missing user identifier in token");
+            
+            Response.Headers.Append("X-User-Id", userId);
+            if (!string.IsNullOrEmpty(userEmail))
+            {
+                Response.Headers.Append("X-User-Email", userEmail);
+            }
             
             return Ok(new { 
-                UserId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value,
-                Email = principal.FindFirst(ClaimTypes.Email)?.Value 
+                UserId = userId,
+                Email = userEmail 
             });
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine($"Token validation failed: {ex.Message}");
             return Unauthorized();
         }
     }

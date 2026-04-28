@@ -5,15 +5,14 @@ ENV ASPNETCORE_URLS=http://+:8080
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY ["Shared/Shared.csproj", "Shared/"]
-COPY ["OrderService/OrderService.csproj", "OrderService/"]
-RUN dotnet restore "OrderService/OrderService.csproj"
+COPY ["src/Shared/Shared.csproj", "src/Shared/"]
+COPY ["src/OrderService/OrderService.csproj", "src/OrderService/"]
+RUN dotnet restore "src/OrderService/OrderService.csproj"
 COPY . .
-WORKDIR "/src/OrderService"
-RUN dotnet build -c Release -o /app/build
+RUN dotnet build "src/OrderService/OrderService.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "src/OrderService/OrderService.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app

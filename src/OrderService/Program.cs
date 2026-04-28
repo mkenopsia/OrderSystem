@@ -13,15 +13,19 @@ builder.Services.AddDbContext<AppDbContext>(opts =>
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderService, OrderService.Services.OrderService>();
 
+var kafkaServers = builder.Configuration["Kafka:BootstrapServers"];
+
 var kafkaConfig = new ProducerConfig
 {
-    BootstrapServers = builder.Configuration.GetValue("Kafka:BootstrapServers", "kafka:9092"),
+    BootstrapServers = kafkaServers,
     Acks = Acks.All,
     EnableIdempotence = true,
     MessageSendMaxRetries = 3,
     RetryBackoffMs = 100
 };
+
 builder.Services.AddSingleton<IProducer<string, string>>(new ProducerBuilder<string, string>(kafkaConfig).Build());
+
 builder.Services.AddHostedService<OutboxPublisherWorker>();
 
 builder.Services.AddControllers();

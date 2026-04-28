@@ -1,18 +1,20 @@
-﻿version: '3.8'
-services:
+﻿services:  
   kafka:
     image: confluentinc/confluent-local:7.4.1
     hostname: kafka
     container_name: kafka
-    ports:
-      - "9092:9092"
-      - "9101:9101"
+    ports: ["9092:9092", "9101:9101"]
     environment:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092"
       KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:29093"
       KAFKA_LISTENERS: "PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092"
-    
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
   order-db:
     image: postgres:16-alpine
     container_name: order-db
@@ -20,7 +22,12 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: orderdb
-    ports: [ "5433:5432" ]
+    ports: ["5433:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   inventory-db:
     image: postgres:16-alpine
@@ -29,7 +36,12 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: inventorydb
-    ports: [ "5434:5432" ]
+    ports: ["5434:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   notification-db:
     image: postgres:16-alpine
@@ -38,29 +50,95 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: notificationdb
-    ports: [ "5435:5432" ]
+    ports: ["5435:5432"]
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
-  order-service:
-    build: ./src/OrderService
-    container_name: order-service
-    ports: ["8080:8080"]
-    depends_on: [kafka, order-db]
+  auth-db:
+    image: postgres:16-alpine
+    container_name: auth-db
     environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: authdb
+    ports: ["5436:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+  
+  order-service:
+    build:
+      context: .
+      dockerfile: src/OrderService/Dockerfile
+    container_name: order-service
+    depends_on:
+      kafka: { condition: service_healthy }
+      order-db: { condition: service_healthy }
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__Default=Host=order-db;Database=orderdb;Username=postgres;Password=postgres
+      - Kafka__BootstrapServers=kafka:9092
+      - JWT__Secret=${JWT_SECRET:-dev-secret-key-must-be-32-chars-at-least}
+      - JWT__Issuer=order-system
+      - JWT__Audience=microservices
+    ports: ["8080:8080"]
+
+  inventory-service:
+    build:
+      context: .
+      dockerfile: src/InventoryService/Dockerfile
+    container_name: inventory-service
+    depends_on:
+      kafka: { condition: service_healthy }
+      inventory-db: { condition: service_healthy }
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Default=Host=inventory-db;Database=inventorydb;Username=postgres;Password=postgres
       - Kafka__BootstrapServers=kafka:9092
 
   notification-service:
-    build: ./src/NotificationService
+    build:
+      context: .
+      dockerfile: src/NotificationService/Dockerfile
     container_name: notification-service
-    depends_on: [kafka, notification-db]
+    depends_on:
+      kafka: { condition: service_healthy }
+      notification-db: { condition: service_healthy }
     environment:
+      - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__Default=Host=notification-db;Database=notificationdb;Username=postgres;Password=postgres
       - Kafka__BootstrapServers=kafka:9092
+      - EmailSettings__Username=${EMAIL_USERNAME}
+      - EmailSettings__Password=${EMAIL_PASSWORD}
 
-  inventory-service:
-    build: ./src/InventoryService
-    container_name: inventory-service
-    depends_on: [ kafka, inventory-db ]
+  auth-service:
+    build:
+      context: .
+      dockerfile: src/AuthService/Dockerfile
+    container_name: auth-service
+    depends_on:
+      auth-db: { condition: service_healthy }
     environment:
-      - ConnectionStrings__Default=Host=inventory-db;Database=inventorydb;Username=postgres;Password=postgres
-      - Kafka__BootstrapServers=kafka:9092
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Default=Host=auth-db;Database=authdb;Username=postgres;Password=postgres
+      - JWT__Secret=${JWT_SECRET:super-duper-secret-key-nobody-can-hack-or-guess}
+      - JWT__Issuer=order-system
+      - JWT__Audience=microservices
+    ports: ["8081:8080"]
+  
+  nginx:
+    build:
+      context: ./src/nginx
+      dockerfile: Dockerfile
+    container_name: nginx
+    ports:
+      - "81:80"
+    depends_on:
+      - auth-service
+      - order-service
+    restart: unless-stopped

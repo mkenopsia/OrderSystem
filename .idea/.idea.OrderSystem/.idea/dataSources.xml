@@ -17,5 +17,13 @@
       <jdbc-url>jdbc:postgresql://localhost:5433/orderdb?password=postgres&amp;user=postgres</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="orderdb@localhost [2]" uuid="1a4a87f3-a851-4afb-b938-66be5ea76bb3">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <configured-by-url>true</configured-by-url>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:5433/orderdb?password=postgres&amp;user=postgres</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>
