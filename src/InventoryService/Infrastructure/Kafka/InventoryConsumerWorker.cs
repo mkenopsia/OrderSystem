@@ -78,12 +78,12 @@ public class InventoryConsumerWorker(
 
             if (result == "Reserved")
             {
-                var reply = new InventoryReservedEvent(evt.OrderId, DateTime.UtcNow);
+                var reply = new InventoryReservedEvent(evt.OrderId, evt.UserId, evt.UserEmail, DateTime.UtcNow);
                 await PublishAsync(reply, evt.OrderId.ToString(), ct);
             }
             else
             {
-                var reply = new InventoryFailedEvent(evt.OrderId, result, DateTime.UtcNow);
+                var reply = new InventoryFailedEvent(evt.OrderId, evt.UserId, evt.UserEmail, result, DateTime.UtcNow);
                 await PublishAsync(reply, evt.OrderId.ToString(), ct);
             }
         }

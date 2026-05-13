@@ -82,10 +82,10 @@
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__Default=Host=order-db;Database=orderdb;Username=postgres;Password=postgres
-      - Kafka__BootstrapServers=kafka:9092
-      - JWT__Secret=${JWT_SECRET:-dev-secret-key-must-be-32-chars-at-least}
-      - JWT__Issuer=order-system
-      - JWT__Audience=microservices
+      - Kafka__BootstrapServers=kafka:29092
+#      - JWT__Secret=${JWT_SECRET:-dev-secret-key-must-be-32-chars-at-least}
+#      - JWT__Issuer=order-system
+#      - JWT__Audience=microservices
     ports: ["8080:8080"]
 
   inventory-service:
@@ -99,7 +99,7 @@
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__Default=Host=inventory-db;Database=inventorydb;Username=postgres;Password=postgres
-      - Kafka__BootstrapServers=kafka:9092
+      - Kafka__BootstrapServers=kafka:29092
 
   notification-service:
     build:
@@ -112,9 +112,13 @@
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__Default=Host=notification-db;Database=notificationdb;Username=postgres;Password=postgres
-      - Kafka__BootstrapServers=kafka:9092
-      - EmailSettings__Username=${EMAIL_USERNAME}
-      - EmailSettings__Password=${EMAIL_PASSWORD}
+      - Kafka__BootstrapServers=kafka:29092
+      - EmailSettings__SmtpHost=smtp.yandex.ru
+      - EmailSettings__SmtpPort=465
+      - EmailSettings__Username=${MAIL_USERNAME}
+      - EmailSettings__Password=${MAIL_PASSWORD}
+      - EmailSettings__FromEmail=noreply@ordersystem.com
+      - EmailSettings__FromName=Order System
 
   auth-service:
     build:
@@ -126,7 +130,7 @@
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__Default=Host=auth-db;Database=authdb;Username=postgres;Password=postgres
-      - JWT__Secret=${JWT_SECRET:super-duper-secret-key-nobody-can-hack-or-guess}
+      - JWT__Secret=super-duper-secret-key-nobody-can-hack-or-guess
       - JWT__Issuer=order-system
       - JWT__Audience=microservices
     ports: ["8081:8080"]

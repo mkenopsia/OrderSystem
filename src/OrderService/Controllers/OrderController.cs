@@ -1,5 +1,3 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderService.Domain;
 using OrderService.Services;
@@ -8,7 +6,7 @@ namespace OrderService.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+// [Authorize]
 public class OrdersController(IOrderService orderService) : ControllerBase
 {
     [HttpPost]

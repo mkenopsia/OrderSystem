@@ -24,7 +24,7 @@ var kafkaConfig = new ProducerConfig
     RetryBackoffMs = 100
 };
 
-builder.Services.AddSingleton<IProducer<string, string>>(new ProducerBuilder<string, string>(kafkaConfig).Build());
+builder.Services.AddSingleton(new ProducerBuilder<string, string>(kafkaConfig).Build());
 
 builder.Services.AddHostedService<OutboxPublisherWorker>();
 

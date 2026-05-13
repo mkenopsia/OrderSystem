@@ -7,6 +7,16 @@ public record OrderCreatedEvent(
     Guid UserId,
     string UserEmail,
     DateTime CreatedAtUtc = default);
-public record InventoryReservedEvent(Guid OrderId, DateTime ReservedAtUtc);
-public record InventoryFailedEvent(Guid OrderId, string Reason, DateTime FailedAtUtc);
+public record InventoryReservedEvent(
+    Guid OrderId, 
+    Guid UserId,              // ← Добавили
+    string? UserEmail,        // ← Добавили
+    DateTime ReservedAtUtc);
+
+public record InventoryFailedEvent(
+    Guid OrderId, 
+    Guid UserId,              // ← Добавили
+    string? UserEmail,        // ← Добавили
+    string Reason, 
+    DateTime FailedAtUtc);
 public record OrderStatusUpdatedEvent(Guid OrderId, string Status, DateTime UpdatedAtUtc);
